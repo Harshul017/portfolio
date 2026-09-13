@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harshul Gupta</title>
+<meta name="description" content="Harshul Gupta — software engineer. Backend systems, distributed messaging, and retrieval pipelines.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --display:"Inter Tight",-apple-system,BlinkMacSystemFont,"SF Pro Display",system-ui,sans-serif;
+  --body:"Inter",-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+  --rail:248px;
+  --col:660px;
+  --ease:cubic-bezier(.22,.75,.24,1);
+}
+html[data-theme="dark"]{
+  --bg:#0B0C0E; --panel:#101114; --line:#1D1F24; --line-2:#2A2D34;
+  --ink:#EDEDEF; --ink-2:#95979F; --ink-3:#63656D;
+  --cell-0:#17191D;
+}
+html[data-theme="light"]{
+  --bg:#F7F7F5; --panel:#FFFFFF; --line:#E3E3DF; --line-2:#D2D2CD;
+  --ink:#131417; --ink-2:#5A5C63; --ink-3:#8B8D93;
+  --cell-0:#E7E7E3;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:var(--body);font-size:15.5px;line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  transition:background .45s var(--ease),color .45s var(--ease);
+}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--ink);color:var(--bg)}
+:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:3px}
+body.loading{overflow:hidden}
+
+/* ══════════════════════════════════════════
+   PRELOADER — name lands, then a football is kicked through it
+   ══════════════════════════════════════════ */
+#pre{position:fixed;inset:0;z-index:900;background:var(--bg);display:grid;place-items:center;overflow:hidden}
+#stage{position:relative}
+#word{
+  font-family:var(--display);font-weight:600;
+  font-size:clamp(2.1rem,8.4vw,4.6rem);
+  letter-spacing:-.05em;line-height:1;white-space:nowrap;display:flex;
+}
+#word span{display:inline-block;opacity:0}
+/* each letter drops, squashes on landing, bounces twice and settles */
+#word span.on{animation:bounceIn .72s cubic-bezier(.33,0,.35,1) both}
+@keyframes bounceIn{
+  0%{opacity:0;transform:translateY(-150%) scaleY(1.22) scaleX(.9)}
+  10%{opacity:1}
+  38%{transform:translateY(0) scaleY(.74) scaleX(1.16)}
+  52%{transform:translateY(-42%) scaleY(1.1) scaleX(.94)}
+  68%{transform:translateY(0) scaleY(.86) scaleX(1.08)}
+  82%{transform:translateY(-13%) scaleY(1.04) scaleX(.98)}
+  92%{transform:translateY(0) scaleY(.95) scaleX(1.03)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
+#word .sp{width:.3em;opacity:1 !important;transform:none !important}
+#word span.gone{
+  animation:scatter .5s cubic-bezier(.2,.6,.3,1) forwards;
+  transition:none;
+}
+@keyframes scatter{
+  to{transform:translate(var(--tx),var(--ty)) rotate(var(--rot)) scale(.75);opacity:0}
+}
+
+#ball{
+  position:absolute;left:50%;top:50%;width:190px;height:190px;
+  margin:-95px 0 0 -95px;
+  opacity:0;will-change:transform;pointer-events:none;
+  filter:drop-shadow(0 12px 30px rgba(0,0,0,.45));
+}
+#ball svg{width:100%;height:100%;display:block}
+
+#pre.shook{animation:shake .34s cubic-bezier(.3,.8,.3,1)}
+@keyframes shake{
+  0%{transform:none}
+  22%{transform:translate(9px,-6px)}
+  48%{transform:translate(-7px,4px)}
+  74%{transform:translate(3px,-2px)}
+  100%{transform:none}
+}
+#pre.out{animation:lift .5s var(--ease) forwards;pointer-events:none}
+@keyframes lift{to{opacity:0}}
+body.loading{overflow:hidden}
+
+/* ══════════════════════════════════════════
+   LEFT RAIL
+   ══════════════════════════════════════════ */
+.rail{
+  position:fixed;top:0;left:0;bottom:0;width:var(--rail);z-index:50;
+  padding:44px 30px 34px;display:flex;flex-direction:column;
+  border-right:1px solid var(--line);background:var(--bg);
+}
+.mark{font:600 17px/1.25 var(--display);letter-spacing:-.03em}
+.mark small{display:block;font:400 13px var(--body);color:var(--ink-3);letter-spacing:0;margin-top:5px}
+.rail nav{margin-top:42px;display:flex;flex-direction:column;gap:1px}
+.rail nav button{
+  position:relative;text-align:left;background:none;border:0;cursor:pointer;
+  font:500 14.5px var(--display);letter-spacing:-.012em;color:var(--ink-3);
+  padding:7px 0 7px 16px;transition:color .22s var(--ease);
+}
+.rail nav button::before{
+  content:"";position:absolute;left:0;top:50%;width:6px;height:1px;
+  background:currentColor;transform:translateY(-50%) scaleX(0);transform-origin:left;
+  transition:transform .26s var(--ease);
+}
+.rail nav button:hover{color:var(--ink-2)}
+.rail nav button[aria-current="true"]{color:var(--ink)}
+.rail nav button[aria-current="true"]::before{transform:translateY(-50%) scaleX(1)}
+.rail-foot{margin-top:auto;display:flex;flex-direction:column;gap:16px}
+#themeBtn{
+  background:none;border:0;cursor:pointer;color:var(--ink-3);
+  font:400 12.5px var(--body);display:flex;align-items:center;gap:8px;padding:0;
+  transition:color .2s var(--ease);
+}
+#themeBtn:hover{color:var(--ink)}
+#themeBtn svg{width:14px;height:14px}
+html[data-theme="dark"] .t-light{display:none}
+html[data-theme="light"] .t-dark{display:none}
+
+/* ══════════════════════════════════════════
+   SCROLL SHELL (weighted scrolling)
+   ══════════════════════════════════════════ */
+#shell{position:fixed;top:0;left:0;width:100%;will-change:transform}
+body.native #shell{position:static;transform:none !important}
+.inner{padding-left:var(--rail)}
+main,.foot{max-width:calc(var(--col) + 96px);padding:0 48px}
+section{padding:66px 0;border-top:1px solid var(--line)}
+section.hidden{display:none !important}
+
+/* section transition on nav click */
+@keyframes enter{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+section.enter{animation:enter .5s var(--ease) both}
+section.enter > *{animation:enter .52s var(--ease) both}
+section.enter > *:nth-child(1){animation-delay:.05s}
+section.enter > *:nth-child(2){animation-delay:.10s}
+section.enter > *:nth-child(3){animation-delay:.15s}
+section.enter > *:nth-child(4){animation-delay:.20s}
+section.enter > *:nth-child(5){animation-delay:.25s}
+section.enter > *:nth-child(n+6){animation-delay:.30s}
+h2{font:600 1.62rem/1.15 var(--display);letter-spacing:-.035em}
+.sub{color:var(--ink-3);font-size:14px;margin:6px 0 30px}
+
+/* ---------- HERO: one screen ---------- */
+#home{
+  border-top:0;min-height:100vh;padding:0;
+  display:flex;flex-direction:column;justify-content:center;
+}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:12.5px;color:var(--ink-3);margin-bottom:26px;
+}
+.dot{width:6px;height:6px;border-radius:50%;background:#3FB950;box-shadow:0 0 0 3px rgba(63,185,80,.15)}
+h1{
+  font:600 clamp(2rem,4.4vw,3.05rem)/1.1 var(--display);
+  letter-spacing:-.042em;max-width:16ch;
+}
+h1 .grey{color:var(--ink-3)}
+.tagline{font:500 clamp(1.02rem,2.1vw,1.18rem)/1.45 var(--display);letter-spacing:-.022em;margin-top:22px}
+.lede{color:var(--ink-2);margin-top:12px;max-width:58ch;font-size:15.5px}
+.hero-stack{margin:26px 0 0}
+.cta{display:flex;gap:9px;margin-top:34px;flex-wrap:wrap}
+.socials{display:flex;gap:6px;margin-top:20px}
+.socials a{
+  width:36px;height:36px;border-radius:9px;display:grid;place-items:center;
+  color:var(--ink-3);transition:color .2s var(--ease),background .2s var(--ease);
+}
+.socials a:hover{color:var(--ink);background:var(--panel)}
+.socials svg{width:17px;height:17px;display:block}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+  font:500 14px var(--display);letter-spacing:-.008em;
+  padding:10px 16px;border-radius:9px;
+  border:1px solid var(--line-2);background:transparent;color:var(--ink);
+  transition:border-color .2s var(--ease),background .2s var(--ease);
+}
+.btn:hover{border-color:var(--ink-3)}
+.btn.solid{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.solid:hover{opacity:.88}
+.btn svg{width:14px;height:14px}
+
+/* ---------- ENTRIES ---------- */
+.entry{padding:26px 0;border-top:1px solid var(--line)}
+.entry:first-of-type{border-top:0;padding-top:0}
+.top{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.entry h3{font:600 1.08rem/1.4 var(--display);letter-spacing:-.024em;display:flex;align-items:center;gap:8px}
+.entry h3 a{color:var(--ink-3);display:grid;place-items:center;transition:color .2s}
+.entry h3 a:hover{color:var(--ink)}
+.entry h3 svg{width:14px;height:14px}
+.role{color:var(--ink-2);font-size:14.5px}
+.when{color:var(--ink-3);font-size:13.5px;text-align:right;white-space:nowrap;line-height:1.5}
+.stack{display:flex;flex-wrap:wrap;gap:5px;margin:15px 0 15px}
+.stack span{
+  font-size:12px;color:var(--ink-2);border:1px solid var(--line);
+  padding:3px 9px;border-radius:6px;
+}
+ul{list-style:none;display:grid;gap:8px}
+ul li{position:relative;padding-left:16px;color:var(--ink-2);font-size:14.8px}
+ul li::before{content:"";position:absolute;left:1px;top:.75em;width:5px;height:1px;background:var(--line-2)}
+ul strong{color:var(--ink);font-weight:500}
+
+/* ---------- SKILLS ---------- */
+.row{display:grid;grid-template-columns:150px 1fr;gap:20px;padding:14px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row dt{font-size:13.5px;color:var(--ink-3)}
+.row dd{color:var(--ink-2);font-size:14.8px}
+
+/* ---------- LEETCODE ---------- */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+  border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:24px}
+.tile{background:var(--bg);padding:15px 14px}
+.tile b{display:block;font:600 1.4rem/1 var(--display);letter-spacing:-.04em}
+.tile i{display:block;font-style:normal;font-size:12px;color:var(--ink-3);margin-top:5px}
+.cal{
+  --cw:8px; --cg:2px; --mg:6px;                     /* cell size + gap drive both rows below */
+  border:1px solid var(--line);border-radius:12px;padding:18px 16px;overflow-x:auto;
+  margin:0 -28px;   /* the 13 month blocks need a touch more room than the column */
+}
+/* One grid per month with a gap between blocks, the way LeetCode draws it —
+   a single 53-column strip reads as one dense slab. */
+.cal-body{display:flex;align-items:flex-start;gap:var(--mg)}
+.m-block{display:flex;flex-direction:column}
+.m-grid{
+  display:grid;grid-auto-flow:column;
+  grid-template-rows:repeat(7,var(--cw));
+  grid-auto-columns:var(--cw);          /* without this, auto tracks stretch */
+  justify-content:start;
+  gap:var(--cg);
+}
+.m-label{text-align:center;font-size:10.5px;color:var(--ink-3);margin-top:7px}
+.cell{width:var(--cw);height:var(--cw);border-radius:2px;background:var(--cell-0)}
+.cell.blank{background:none}
+.cell[data-l="1"]{background:#0E4429}.cell[data-l="2"]{background:#006D32}
+.cell[data-l="3"]{background:#26A641}.cell[data-l="4"]{background:#39D353}
+html[data-theme="light"] .cell[data-l="1"]{background:#9BE9A8}
+html[data-theme="light"] .cell[data-l="2"]{background:#40C463}
+html[data-theme="light"] .cell[data-l="3"]{background:#30A14E}
+html[data-theme="light"] .cell[data-l="4"]{background:#216E39}
+.legend{display:flex;justify-content:flex-start;align-items:center;gap:4px;font-size:11px;color:var(--ink-3);margin-top:12px}
+.legend .cell{width:9px;height:9px;border-radius:2px}
+#lcNote{font-size:13px;color:var(--ink-3);margin-top:14px}
+
+/* ---------- WINS ---------- */
+.win{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:baseline;padding:16px 0;border-top:1px solid var(--line)}
+.win:first-child{border-top:0}
+.win p{font-size:14.8px}
+.win strong{font-weight:600}
+.win .ext{
+  border-bottom:1px solid var(--line-2);padding-bottom:1px;
+  transition:border-color .2s var(--ease);
+}
+.win .ext:hover{border-bottom-color:var(--ink)}
+.win span{font-size:13px;color:var(--ink-3);white-space:nowrap}
+
+/* ---------- FOOT ---------- */
+.foot{border-top:1px solid var(--line);padding-top:28px;padding-bottom:52px;
+  display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  color:var(--ink-3);font-size:13.5px}
+.foot a:hover{color:var(--ink)}
+
+/* ---------- FOCUS PILL ---------- */
+#pill{
+  position:fixed;z-index:60;left:calc(var(--rail) + 48px);top:26px;display:none;
+  align-items:center;gap:12px;font-size:13px;color:var(--ink-2);
+  background:var(--panel);border:1px solid var(--line);
+  padding:6px 6px 6px 14px;border-radius:99px;
+}
+body.focused #pill{display:flex}
+body.focused section{padding-top:88px}
+body.focused #home{min-height:0;padding:88px 0 66px}
+#pill button{font:500 12.5px var(--body);border:0;cursor:pointer;background:var(--ink);color:var(--bg);padding:5px 11px;border-radius:99px}
+
+/* ---------- RESPONSIVE ---------- */
+@media(max-width:900px){
+  :root{--rail:0px}
+  .rail{
+    position:sticky;top:0;bottom:auto;width:100%;height:auto;flex-direction:row;
+    align-items:center;justify-content:space-between;padding:12px 20px;
+    border-right:0;border-bottom:1px solid var(--line);gap:14px;
+    overflow-x:auto;
+  }
+  .mark small{display:none}
+  .rail nav{margin:0;flex-direction:row;gap:2px}
+  .rail nav button{padding:6px 9px;font-size:13.5px}
+  .rail nav button::before{display:none}
+  .rail nav button[aria-current="true"]{text-decoration:underline;text-underline-offset:5px}
+  .rail-foot{margin:0;flex-direction:row;align-items:center;gap:14px}
+  main,.foot{padding:0 20px;max-width:none}
+  #home{min-height:calc(100vh - 130px);padding:40px 0}
+  section{padding:48px 0}
+  #pill{left:20px;top:auto;bottom:20px}
+  body.focused section,body.focused #home{padding-top:56px}
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .cal{margin:0}
+  .row{grid-template-columns:1fr;gap:3px}
+  .when{text-align:left}
+  .win{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body class="loading">
+
+<div id="pre"><div id="stage">
+  <div id="word" aria-label="Harshul Gupta"></div>
+  <div id="ball" aria-hidden="true">
+    <svg viewBox="0 0 200 200">
+      <defs><clipPath id="ballclip"><circle cx="100" cy="100" r="95"/></clipPath></defs>
+      <circle cx="100" cy="100" r="95" fill="#fff"/>
+      <g clip-path="url(#ballclip)" fill="#111"><path d="M100.0 68.0 130.4 90.1 118.8 125.9 81.2 125.9 69.6 90.1Z"/><path d="M100.0 47.0 74.3 28.3 84.1 -1.8 115.9 -1.8 125.7 28.3Z"/><path d="M150.4 83.6 160.2 53.4 192.0 53.4 201.8 83.6 176.1 102.3Z"/><path d="M131.2 142.9 162.9 142.9 172.7 173.1 147.0 191.7 121.3 173.1Z"/><path d="M68.8 142.9 78.7 173.1 53.0 191.7 27.3 173.1 37.1 142.9Z"/><path d="M49.6 83.6 23.9 102.3 -1.8 83.6 8.0 53.4 39.8 53.4Z"/></g>
+      <g clip-path="url(#ballclip)" stroke="#111" stroke-width="7" stroke-linecap="round" fill="none"><path d="M100.0 68.0 L100.0 44.0 M130.4 90.1 L153.3 82.7 M118.8 125.9 L132.9 145.3 M81.2 125.9 L67.1 145.3 M69.6 90.1 L46.7 82.7"/></g>
+      <circle cx="100" cy="100" r="95" fill="none" stroke="#111" stroke-width="3" opacity=".5"/>
+    </svg>
+  </div>
+</div></div></div>
+  <div id="word" aria-label="Harshul Gupta"></div>
+</div></div>
+
+<!-- ══════════ RAIL ══════════ -->
+<aside class="rail">
+  <div class="mark">Harshul Gupta<small>Software engineer</small></div>
+  <nav id="nav">
+    <button data-t="home" aria-current="true">Overview</button>
+    <button data-t="work">Work</button>
+    <button data-t="projects">Projects</button>
+    <button data-t="achievements">Achievements</button>
+    <button data-t="skills">Skills</button>
+    <button data-t="education">Education</button>
+    <button data-t="leetcode">LeetCode</button>
+  </nav>
+  <div class="rail-foot">
+    <button id="themeBtn">
+      <svg class="t-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2M12 19.4v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2.6 12h2M19.4 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="t-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <span id="themeLbl">Light</span>
+    </button>
+  </div>
+</aside>
+
+<div id="pill"><span id="pillLbl">Work</span><button id="showAll">Show all</button></div>
+
+<div id="shell"><div class="inner">
+<main>
+
+<!-- ══════════ HERO ══════════ -->
+<section id="home">
+  <span class="eyebrow"><span class="dot"></span>Open to internships from January 2027, and full-time roles from June 2027</span>
+  <h1>Software engineer<span class="grey">, building the half of the product nobody sees.</span></h1>
+  <p class="tagline">Backend systems, distributed messaging, and retrieval pipelines.</p>
+  <p class="lede">Final-year Computer Science student at BIT Mesra. I work on APIs, queues, schemas, and RAG — most recently on vehicle diagnostics infrastructure at Hero MotoCorp.</p>
+  <div class="stack hero-stack">
+    <span>Node.js</span><span>Next.js</span><span>TypeScript</span><span>PostgreSQL</span>
+    <span>Redis</span><span>RabbitMQ</span><span>FastAPI</span><span>Docker</span>
+  </div>
+
+  <div class="cta">
+    <a class="btn solid" href="Harshul_Resume.pdf" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>Resume</a>
+    <button class="btn" id="copyMail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4.5" width="20" height="15" rx="2"/><path d="m2 7 10 6 10-6"/></svg><span id="mailLbl">Copy email</span></button>
+  </div>
+
+  <div class="socials">
+    <a href="https://github.com/Harshul017" target="_blank" rel="noopener" aria-label="GitHub"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49l-.01-1.7c-2.78.62-3.37-1.37-3.37-1.37-.46-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.34 1.12 2.91.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.35 4.8-4.58 5.05.36.32.68.94.68 1.9l-.01 2.82c0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg></a>
+    <a href="https://linkedin.com/in/harshul-gupta-324b66281" target="_blank" rel="noopener" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM9 9h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05C20.6 8.65 22 11 22 14.4V21h-4v-5.9c0-1.4-.03-3.2-1.95-3.2-1.96 0-2.26 1.53-2.26 3.1V21H9z"/></svg></a>
+    <a href="https://leetcode.com/u/harshul17/" target="_blank" rel="noopener" aria-label="LeetCode"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"/></svg></a>
+    <a href="mailto:harshulgupta1384@gmail.com" aria-label="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4.5" width="20" height="15" rx="2"/><path d="m2 7 10 6 10-6"/></svg></a>
+  </div>
+</section>
+
+<!-- ══════════ WORK ══════════ -->
+<section id="work">
+  <h2>Work</h2>
+  <p class="sub">Where the code went to production.</p>
+  <article class="entry">
+    <div class="top">
+      <div><h3>Hero MotoCorp Ltd.</h3><p class="role">Software Development Intern</p></div>
+      <p class="when">Jun — Aug 2026<br>Jaipur, India</p>
+    </div>
+    <div class="stack"><span>Next.js</span><span>Node.js</span><span>PostgreSQL</span><span>Redis</span><span>RabbitMQ</span><span>JWT</span><span>Tailwind</span><span>Gemini</span></div>
+    <ul>
+      <li>Contributed to the VCI (Vehicle Communication Interface) app, used internally for end-of-line firmware updates and proof-of-concept vehicle diagnostics.</li>
+      <li>Wrote backend API routes in Next.js against a PostgreSQL database, covering driver registration and the face-authentication flow.</li>
+      <li>Added role-based access control using JWT, with sessions stored in Redis.</li>
+      <li>Worked on the messaging layer with RabbitMQ, moving service-to-service calls onto queues so a slow consumer wouldn't hold up the rest of the pipeline.</li>
+      <li>Cleaned and prepared roughly 4M EV telemetry records across 128 features to feed an adaptive time-to-empty prediction model the ML team was building.</li>
+      <li>Sat in with the cloud team on VCI's AWS deployment and picked up the basics of EC2, S3, and containerized builds.</li>
+    </ul>
+  </article>
+</section>
+
+<!-- ══════════ PROJECTS ══════════ -->
+<section id="projects">
+  <h2>Projects</h2>
+  <p class="sub">Built to find out whether I could.</p>
+
+  <article class="entry">
+    <div class="top">
+      <div><h3>ContextGrid <a href="https://github.com/Harshul017/ContextGrid" target="_blank" rel="noopener" aria-label="Repo"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49l-.01-1.7c-2.78.62-3.37-1.37-3.37-1.37-.46-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.34 1.12 2.91.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.35 4.8-4.58 5.05.36.32.68.94.68 1.9l-.01 2.82c0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg></a></h3><p class="role">Multimodal RAG platform</p></div>
+    </div>
+    <div class="stack"><span>Next.js</span><span>FastAPI</span><span>LangChain</span><span>ChromaDB</span><span>Gemini</span></div>
+    <ul>
+      <li>Hold a conversation with PDFs, images, and structured documents through semantic search.</li>
+      <li>Ingestion and vector-indexing pipeline on FastAPI and ChromaDB, with distributed storage and low-latency retrieval over embeddings.</li>
+      <li>Next.js interface with file uploads, chat history, and streaming responses.</li>
+    </ul>
+  </article>
+
+  <article class="entry">
+    <div class="top">
+      <div><h3>EphemChat <a href="https://github.com/Harshul017/EphemChat" target="_blank" rel="noopener" aria-label="Repo"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49l-.01-1.7c-2.78.62-3.37-1.37-3.37-1.37-.46-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.34 1.12 2.91.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.35 4.8-4.58 5.05.36.32.68.94.68 1.9l-.01 2.82c0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg></a></h3><p class="role">Chat rooms that delete themselves</p></div>
+    </div>
+    <div class="stack"><span>Next.js</span><span>Node.js</span><span>Redis</span><span>WebSockets</span></div>
+    <ul>
+      <li>Rooms, messages, and memberships expire on their own through TTL-based Redis keys — hashes, lists, sets — so nothing is persisted.</li>
+      <li>Real-time messaging over WebSockets, with TTL expiry synchronized on room start or first message sent.</li>
+    </ul>
+  </article>
+
+  <article class="entry">
+    <div class="top">
+      <div><h3>PeerUP <a href="https://github.com/Harshul017/PeerUp_LC" target="_blank" rel="noopener" aria-label="Repo"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49l-.01-1.7c-2.78.62-3.37-1.37-3.37-1.37-.46-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.34 1.12 2.91.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.35 4.8-4.58 5.05.36.32.68.94.68 1.9l-.01 2.82c0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg></a></h3><p class="role">Coding hints inside the browser</p></div>
+    </div>
+    <div class="stack"><span>JavaScript</span><span>Chrome Extension API</span><span>OpenAI API</span></div>
+    <ul>
+      <li>Chrome extension that reads the LeetCode problem you're on and offers a hint instead of the answer.</li>
+      <li>Automated DOM interactions and batched async requests to keep hints near-instant.</li>
+    </ul>
+  </article>
+
+</section>
+
+<!-- ══════════ ACHIEVEMENTS ══════════ -->
+<section id="achievements">
+  <h2>Achievements</h2>
+  <p class="sub">Outside the codebase.</p>
+  <div class="win">
+    <p>Ranked <strong>1262</strong> in LeetCode Biweekly Contest 191.</p>
+    <span>Biweekly 191</span>
+  </div>
+  <div class="win">
+    <p>Shortlisted for Round 2 of Flipkart GRiD, from 1.5 lakh+ participants nationwide.</p>
+    <span>Flipkart GRiD</span>
+  </div>
+  <div class="win">
+    <p><a href="https://drive.google.com/file/d/1FgbL2TuScu7BhsIsuyZh-BFhnWWmKmVC/preview" target="_blank" rel="noopener" class="ext">Published a research paper on food wastage at Indian weddings.</a></p>
+    <span>TSM Journal</span>
+  </div>
+  <div class="win">
+    <p>Solved 350+ data structures and algorithms problems across LeetCode and other platforms.</p>
+    <span>350+ problems</span>
+  </div>
+</section>
+
+<!-- ══════════ SKILLS ══════════ -->
+<section id="skills">
+  <h2>Skills</h2>
+  <p class="sub">What I reach for.</p>
+  <dl>
+    <div class="row"><dt>Languages</dt><dd>C++, JavaScript, TypeScript</dd></div>
+    <div class="row"><dt>Backend</dt><dd>Node.js, Express.js, FastAPI, REST APIs, Next.js API Routes</dd></div>
+    <div class="row"><dt>Databases</dt><dd>PostgreSQL, MongoDB, SQLite, ChromaDB</dd></div>
+    <div class="row"><dt>Distributed</dt><dd>RabbitMQ, Redis, BullMQ, asynchronous processing</dd></div>
+    <div class="row"><dt>Frontend</dt><dd>React.js, Next.js, Tailwind CSS, HTML, CSS</dd></div>
+    <div class="row"><dt>AI</dt><dd>RAG, vector databases, LangChain, prompt engineering</dd></div>
+    <div class="row"><dt>Tools</dt><dd>Git, GitHub, Docker, Postman, AWS (EC2, S3)</dd></div>
+    <div class="row"><dt>Coursework</dt><dd>DSA, DAA, DBMS, SQL, OOP, operating systems</dd></div>
+  </dl>
+</section>
+
+<!-- ══════════ EDUCATION ══════════ -->
+<section id="education">
+  <h2>Education</h2>
+  <p class="sub">Where I learned it.</p>
+  <article class="entry">
+    <div class="top"><div><h3>Birla Institute of Technology, Mesra</h3><p class="role">B.Tech, Computer Science and Engineering</p></div>
+    <p class="when">Aug 2023 — May 2027<br>Ranchi, India</p></div>
+    <ul><li>CGPA <strong>8.17 / 10</strong></li></ul>
+  </article>
+  <article class="entry">
+    <div class="top"><div><h3>Maheshwari Public School</h3><p class="role">Class XII, CBSE</p></div>
+    <p class="when">2022<br>Jaipur, India</p></div>
+    <ul><li><strong>81.6%</strong></li></ul>
+  </article>
+  <article class="entry">
+    <div class="top"><div><h3>Maheshwari Public School</h3><p class="role">Class X, CBSE</p></div>
+    <p class="when">2020<br>Jaipur, India</p></div>
+    <ul><li><strong>90.8%</strong></li></ul>
+  </article>
+</section>
+
+<!-- ══════════ LEETCODE ══════════ -->
+<section id="leetcode">
+  <h2>LeetCode</h2>
+  <p class="sub">Practice, plotted over the last year. <a href="https://leetcode.com/u/harshul17/" target="_blank" rel="noopener" style="color:var(--ink-2);text-decoration:underline;text-underline-offset:3px">@harshul17</a></p>
+  <div class="tiles">
+    <div class="tile"><b id="lcTotal">—</b><i>Solved</i></div>
+    <div class="tile"><b id="lcEasy">—</b><i>Easy</i></div>
+    <div class="tile"><b id="lcMed">—</b><i>Medium</i></div>
+    <div class="tile"><b id="lcHard">—</b><i>Hard</i></div>
+  </div>
+  <div class="cal">
+    <div class="cal-body" id="calBody"></div>
+    <div class="legend"><span>Less</span><span class="cell"></span><span class="cell" data-l="1"></span><span class="cell" data-l="2"></span><span class="cell" data-l="3"></span><span class="cell" data-l="4"></span><span>More</span></div>
+  </div>
+  <p id="lcNote">Loading submissions…</p>
+</section>
+</main>
+
+<div class="foot">
+  <span>Built by Harshul Gupta</span>
+  <a href="mailto:harshulgupta1384@gmail.com">harshulgupta1384@gmail.com</a>
+</div>
+</div></div>
+
+<script>
+const LC_USER = "harshul17";
+/* Optional: paste a saved LeetCode response here and the section renders
+   instantly with no network call. See README for the one URL to copy from. */
+const LC_FALLBACK = null;
+const LC_DAYS = 365;   // how far back the heatmap reaches
+const EMAIL = "harshulgupta1384@gmail.com";
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ══════════ PRELOADER ══════════ */
+(function(){
+  const NAME = "Harshul Gupta";
+  const DROP = 58;      // gap between letters starting to fall
+  const LAND = 720;     // one letter's full bounce
+  const BEAT = 340;     // pause after the name settles, before the kick
+  const FLIGHT = 780;   // ball travelling in
+  const BURST = 520;    // ball receding away after the strike
+
+  const word = document.getElementById("word");
+  const ball = document.getElementById("ball");
+  const pre  = document.getElementById("pre");
+  const letters = [];
+
+  for (const c of NAME){
+    const el = document.createElement("span");
+    if (c === " "){ el.className = "sp"; word.appendChild(el); continue; }
+    el.textContent = c; word.appendChild(el); letters.push(el);
+  }
+
+  function finish(){
+    pre.classList.add("out");
+    document.body.classList.remove("loading");
+    setTimeout(() => { pre.remove(); measure(); }, 500);
+  }
+
+  if (reduced){
+    letters.forEach(l => l.classList.add("on"));
+    ball.remove();
+    setTimeout(finish, 320);
+    return;
+  }
+
+  // 1. the name lands, letter by letter
+  letters.forEach((l, i) => setTimeout(() => l.classList.add("on"), i * DROP));
+  const landed = (letters.length - 1) * DROP + LAND + BEAT;
+
+  // 2. the ball is struck from off-screen low-left and drives into the name
+  setTimeout(() => {
+    ball.style.opacity = "1";
+    ball.animate(
+      [{ transform:"translate(-88vw, 58vh) scale(.22) rotate(0deg)" },
+       { transform:"translate(0, 0) scale(1) rotate(680deg)" }],
+      { duration:FLIGHT, easing:"cubic-bezier(.7,.02,.85,.5)", fill:"forwards" }   // slow out of frame, quick at impact
+    );
+  }, landed);
+
+  // 3. impact — the letters are knocked out of the way and the ball comes at you
+  const hit = landed + FLIGHT;
+  setTimeout(() => {
+    pre.classList.add("shook");
+    letters.forEach(l => {
+      const r = l.getBoundingClientRect();
+      const dir = (r.left + r.width / 2) - innerWidth / 2;   // away from the strike
+      l.style.setProperty("--tx", (dir * 0.55 + (Math.random() - .5) * 90).toFixed(0) + "px");
+      l.style.setProperty("--ty", (-70 - Math.random() * 130).toFixed(0) + "px");
+      l.style.setProperty("--rot", ((Math.random() - .5) * 70).toFixed(0) + "deg");
+      l.classList.add("gone");
+    });
+    // carries on through the screen and away into the distance
+    ball.animate(
+      [{ transform:"translate(0, 0) scale(1) rotate(680deg)", opacity:1, offset:0 },
+       { transform:"translate(14vw, -12vh) scale(.42) rotate(920deg)", opacity:1, offset:.55 },
+       { transform:"translate(24vw, -19vh) scale(.1) rotate(1080deg)", opacity:0, offset:1 }],
+      { duration:BURST, easing:"cubic-bezier(.25,.6,.35,1)", fill:"forwards" }
+    );
+  }, hit);
+
+  // 4. reveal
+  setTimeout(finish, hit + BURST - 40);
+})();
+
+/* ══════════ WEIGHTED SCROLL ══════════ */
+const shell = document.getElementById("shell");
+let target = 0, current = 0, maxY = 0, ticking = false, lockUntil = 0;
+const touch = matchMedia("(hover: none)").matches;
+const nativeMode = touch || reduced;
+if (nativeMode) document.body.classList.add("native");
+
+function measure(){
+  if (nativeMode) return;
+  document.body.style.height = shell.offsetHeight + "px";
+  maxY = Math.max(0, shell.offsetHeight - innerHeight);
+}
+function loop(){
+  const diff = target - current;
+  if (Math.abs(diff) < .08){ current = target; ticking = false; }
+  else { current += diff * 0.062; requestAnimationFrame(loop); }   // ← weight of the scroll
+  shell.style.transform = `translate3d(0,${-current.toFixed(2)}px,0)`;
+  markActive();
+}
+if (!nativeMode){
+  addEventListener("scroll", () => {
+    if (performance.now() < lockUntil){ target = current = 0; return; }
+    target = Math.min(scrollY, maxY);
+    if (!ticking){ ticking = true; requestAnimationFrame(loop); }
+  }, { passive:true });
+  addEventListener("resize", measure);
+  new ResizeObserver(measure).observe(shell);
+  measure();
+}
+
+/* ══════════ NAV: click isolates, scroll shows all ══════════ */
+const sections = [...document.querySelectorAll("main > section")];
+const btns = [...document.querySelectorAll("#nav button")];
+const pillLbl = document.getElementById("pillLbl");
+
+function setActive(id){ btns.forEach(b => b.setAttribute("aria-current", String(b.dataset.t === id))); }
+
+function markActive(){
+  if (document.body.classList.contains("focused")) return;
+  const y = (nativeMode ? scrollY : current) + innerHeight * 0.32;
+  let id = sections[0].id;
+  for (const s of sections) if (s.offsetTop <= y) id = s.id;
+  setActive(id);
+}
+
+function toTop(){
+  target = 0; current = 0;
+  shell.style.transform = "translate3d(0,0,0)";
+  scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+}
+function jump(){
+  lockUntil = performance.now() + 350;   // ignore the browser's scroll-clamp echo
+  measure();                             // reads offsetHeight -> forces reflow first
+  toTop();
+  requestAnimationFrame(() => { measure(); toTop(); });
+}
+function animateIn(el){
+  if (!el || reduced) return;
+  el.classList.remove("enter");
+  void el.offsetWidth;              // restart the animation
+  el.classList.add("enter");
+  el.addEventListener("animationend", () => el.classList.remove("enter"), { once:true });
+}
+btns.forEach(b => b.addEventListener("click", () => {
+  const id = b.dataset.t;
+  if (id === "home") return showAll();
+  sections.forEach(s => s.classList.toggle("hidden", s.id !== id));
+  document.body.classList.add("focused");
+  pillLbl.textContent = b.textContent;
+  setActive(id); jump();
+  animateIn(document.getElementById(id));
+}));
+function showAll(){
+  sections.forEach(s => s.classList.remove("hidden"));
+  document.body.classList.remove("focused");
+  setActive("home"); jump();
+  animateIn(sections[0]);
+}
+document.getElementById("showAll").addEventListener("click", showAll);
+addEventListener("scroll", markActive, { passive:true });
+
+/* ══════════ THEME ══════════ */
+const root = document.documentElement, lbl = document.getElementById("themeLbl");
+if (matchMedia("(prefers-color-scheme: light)").matches) root.dataset.theme = "light";
+lbl.textContent = root.dataset.theme === "dark" ? "Light" : "Dark";
+document.getElementById("themeBtn").addEventListener("click", () => {
+  root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+  lbl.textContent = root.dataset.theme === "dark" ? "Light" : "Dark";
+});
+
+/* ══════════ COPY EMAIL ══════════ */
+document.getElementById("copyMail").addEventListener("click", async () => {
+  const l = document.getElementById("mailLbl");
+  try { await navigator.clipboard.writeText(EMAIL); l.textContent = "Copied"; }
+  catch { l.textContent = EMAIL; }
+  setTimeout(() => l.textContent = "Copy email", 1800);
+});
+
+/* ══════════ LEETCODE ══════════ */
+(function(){
+  const body = document.getElementById("calBody");
+  const today = new Date(); today.setHours(0,0,0,0);
+  const start = new Date(today);
+  start.setDate(start.getDate() - (LC_DAYS - 1));
+  const map = new Map();
+  const MN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const key = d => d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+
+  /* Walk month by month. Each month is its own 7-row grid, padded at the front
+     with blanks so day 1 lands on its real weekday row. */
+  const m = new Date(start.getFullYear(), start.getMonth(), 1);
+  while (m <= today){
+    const first = new Date(Math.max(m, start));
+    const lastOfMonth = new Date(m.getFullYear(), m.getMonth() + 1, 0);
+    const last = new Date(Math.min(lastOfMonth, today));
+
+    const block = document.createElement("div");
+    block.className = "m-block";
+    const grid = document.createElement("div");
+    grid.className = "m-grid";
+
+    for (let b = 0; b < first.getDay(); b++){
+      const pad = document.createElement("div");
+      pad.className = "cell blank";
+      grid.appendChild(pad);
+    }
+    for (const d = new Date(first); d <= last; d.setDate(d.getDate() + 1)){
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      cell.title = key(d);
+      map.set(key(d), cell);
+      grid.appendChild(cell);
+    }
+
+    const label = document.createElement("div");
+    label.className = "m-label";
+    label.textContent = MN[m.getMonth()];
+
+    block.append(grid, label);
+    body.appendChild(block);
+    m.setMonth(m.getMonth() + 1);
+  }
+
+  const lvl = n => n >= 8 ? 4 : n >= 5 ? 3 : n >= 3 ? 2 : n >= 1 ? 1 : 0;
+  const note = document.getElementById("lcNote");
+  const set = (id, v) => { if (v !== undefined && v !== null) document.getElementById(id).textContent = v; };
+
+  /* Sources are tried in order. The first is your own cached endpoint (present
+     only if you deploy the included api/leetcode.js); the rest are public
+     mirrors used as fallbacks. Whatever a source is missing, the next fills in. */
+  const SOURCES = [
+    `/api/leetcode?u=${LC_USER}`,
+    `https://leetcode-api-faisalshohag.vercel.app/${LC_USER}`,
+    `https://alfa-leetcode-api.onrender.com/userProfile/${LC_USER}`,
+    `https://leetcode-stats-api.herokuapp.com/${LC_USER}`
+  ];
+
+  async function grab(url, ms){
+    const ac = new AbortController();
+    const t = setTimeout(() => ac.abort(), ms);
+    try {
+      const r = await fetch(url, { signal: ac.signal, headers: { Accept: "application/json" } });
+      if (!r.ok) throw new Error(r.status);
+      return await r.json();
+    } finally { clearTimeout(t); }
+  }
+
+  /* Every source returns a slightly different shape. Flatten them all. */
+  function normalize(j){
+    if (!j || typeof j !== "object") return {};
+    const u = j.matchedUser || j.data?.matchedUser || j;
+    const out = {};
+
+    const nums = u.submitStats?.acSubmissionNum || u.acSubmissionNum;
+    if (Array.isArray(nums)){
+      for (const n of nums){
+        const d = (n.difficulty || "").toLowerCase();
+        if (d === "all") out.total = n.count;
+        if (d === "easy") out.easy = n.count;
+        if (d === "medium") out.med = n.count;
+        if (d === "hard") out.hard = n.count;
+      }
+    }
+    if (out.total == null && typeof u.totalSolved === "number") out.total = u.totalSolved;
+    if (out.easy  == null && typeof u.easySolved  === "number") out.easy = u.easySolved;
+    if (out.med   == null && typeof u.mediumSolved === "number") out.med = u.mediumSolved;
+    if (out.hard  == null && typeof u.hardSolved  === "number") out.hard = u.hardSolved;
+
+    let cal = u.submissionCalendar ?? j.submissionCalendar;
+    if (typeof cal === "string"){ try { cal = JSON.parse(cal); } catch { cal = null; } }
+    if (cal && typeof cal === "object") out.cal = cal;
+    return out;
+  }
+
+  function paint(cal){
+    let total = 0, active = 0;
+    for (const [ts, c] of Object.entries(cal)){
+      const d = new Date(Number(ts) * 1000);
+      const key = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+      const cell = map.get(key);
+      if (cell){
+        cell.dataset.l = lvl(c);
+        cell.title = `${c} submission${c > 1 ? "s" : ""} on ${key}`;
+        total += c; active++;
+      }
+    }
+    note.textContent = `${total} submissions across ${active} active days in the last year.`;
+    return total > 0;
+  }
+
+  /* All sources are raced in parallel and the UI updates the moment any of
+     them lands, so one slow mirror can no longer stall the whole section. */
+  (async () => {
+    const got = {};
+    let painted = false;
+
+    function apply(d){
+      let changed = false;
+      for (const k of ["total","easy","med","hard","cal"]){
+        if (got[k] == null && d[k] != null){ got[k] = d[k]; changed = true; }
+      }
+      if (!changed) return;
+      set("lcTotal", got.total); set("lcEasy", got.easy);
+      set("lcMed", got.med);     set("lcHard", got.hard);
+      if (got.cal && !painted) painted = paint(got.cal);
+    }
+
+    if (typeof LC_FALLBACK === "object" && LC_FALLBACK) apply(normalize(LC_FALLBACK));
+
+    await Promise.allSettled(SOURCES.map(url =>
+      grab(url, url.startsWith("/") ? 5000 : 10000).then(j => apply(normalize(j)))
+    ));
+
+    if (painted) return;
+    if (got.total != null){
+      note.textContent = "Daily submission history is unavailable, but the totals above are current.";
+      return;
+    }
+    note.innerHTML = "Live stats can't load in a preview or from a local file — " +
+      "they need the page served over http. " +
+      '<a href="https://leetcode.com/u/' + LC_USER + '/" target="_blank" rel="noopener" ' +
+      'style="color:var(--ink-2);text-decoration:underline;text-underline-offset:3px">View on LeetCode</a>.';
+  })();
+})();
+</script>
+</body>
+</html>
