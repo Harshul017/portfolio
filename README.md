@@ -1,72 +1,106 @@
 # Portfolio — Harshul Gupta
-# Updated readme
+
+Live at **[harshul.is-a.dev](https://harshul.is-a.dev)**
+(also reachable at the underlying Vercel URL, e.g. `portfolio-five-liart-11.vercel.app`)
 
 ```
-index.html          the whole site
+index.html          the whole site — structure, styles, and behavior in one file
 api/leetcode.js     cached LeetCode proxy (Vercel serverless function)
-Harshul_Resume.pdf  ← add this yourself, next to index.html
+Harshul_Resume.pdf  linked from the Resume button — keep this filename exact
+README.md           this file
 ```
 
-## Why LeetCode shows nothing in a preview
+## How it's deployed
 
-The stats and heatmap are fetched at page load. Browsers block those requests
-in two situations, and a preview pane is usually both:
-
-1. **Opening the file directly** (the address bar shows `file:///...`). A page
-   loaded from disk has a null origin, so every cross-origin request is refused.
-2. **A sandboxed preview iframe.** Most preview panes set a content-security
-   policy that blocks outbound network calls entirely.
-
-Neither is a problem with the code. Serve the page over http and it works.
-
-## See it working locally
-
-From the folder containing `index.html`:
+The repo is connected to Vercel via GitHub. Any push to `main` redeploys
+automatically:
 
 ```bash
-python3 -m http.server 8000
+git add .
+git commit -m "your change"
+git push
 ```
 
-Then open **http://localhost:8000** — not the file path. The heatmap should
-fill within a few seconds.
+No manual `vercel` command is needed day to day — that connection already
+does it. The custom domain `harshul.is-a.dev` is registered through
+[is-a.dev](https://github.com/is-a-dev/register), a free subdomain registry
+that works by merging a JSON file into their public repo. That registration
+lives in **a different repo** (`register`, not this one) — this README only
+covers the portfolio itself.
 
-## Deploy
+## LeetCode section
 
-**Vercel** is the recommended host, because it serves `index.html` as a static
-file *and* turns `api/leetcode.js` into a live endpoint with no configuration:
+The stats and heatmap are fetched live on every page load from `LC_USER` (set
+near the top of the `<script>` in `index.html`). Four sources are tried in
+parallel — your own `/api/leetcode` endpoint first, then three public
+mirrors — and the UI updates the moment any of them responds, so a slow or
+down mirror doesn't stall the section.
+
+**`/api/leetcode` only runs once deployed to Vercel.** Static file servers
+(`python3 -m http.server`, VS Code Live Server, etc.) can't execute it, so
+testing locally that way only exercises the public-mirror fallbacks — which
+is fine for a quick look, but don't debug a real problem against it. To test
+the actual endpoint locally:
 
 ```bash
-npm i -g vercel
-vercel
+npx vercel dev
 ```
 
-The page calls `/api/leetcode` first and falls back to public mirrors if it
-isn't there, so a static-only host (GitHub Pages, Netlify without functions)
-still works — just less reliably, since those mirrors are volunteer-run and
-sometimes down.
+If the whole section ever shows nothing, it's almost always one of:
 
-## Last resort: hard-code the data
+- **Opened via `file:///...`** instead of a server. A page loaded from disk
+  has no origin, so the browser blocks every request it makes.
+- **A sandboxed preview** (some embedded browser previews block outbound
+  network calls entirely).
+- **LeetCode's own submission-privacy setting** — check
+  Settings → Privacy on leetcode.com that Progress/Submissions are public.
 
-If you'd rather not depend on any network call, open this URL in a browser tab
-while logged out:
+None of these are bugs in the code; serving over `http(s)` on a real domain,
+which is exactly what `harshul.is-a.dev` already does, resolves the first two.
+
+### Hard-coded fallback (optional)
+
+If you ever want the section to render instantly with zero network
+dependency, there's an escape hatch. Open this URL while logged out:
 
 ```
 https://leetcode-api-faisalshohag.vercel.app/harshul17
 ```
 
-Copy the whole JSON response, then in `index.html` find:
+Copy the JSON response, then in `index.html` find:
 
 ```js
 const LC_FALLBACK = null;
 ```
 
-and replace `null` with the pasted object. The section will render instantly
-from that snapshot, with no request at all. Live sources still run on top and
-overwrite it if they succeed, so the numbers self-heal once deployed — you'd
-just need to re-paste occasionally to keep the offline copy fresh.
+and paste the object in place of `null`. Live sources still run on top and
+overwrite it if they succeed, so this is a snapshot that self-heals once a
+live source responds — not a replacement for the real fetch.
 
-## Things to update as you go
+## Things to keep in sync as your situation changes
 
-- `LC_USER` at the top of the script, if your LeetCode handle ever changes.
-- The availability line in the hero (`Open to full-time roles from June 2027`).
-- Add new roles to the Work section; the layout takes any number of entries.
+- **`LC_USER`** near the top of the script — if your LeetCode handle changes.
+- **The availability line** in the hero (currently: *"Open to internships
+  from January 2027, and full-time roles from June 2027"*) — update as those
+  dates pass or your status changes.
+- **`Harshul_Resume.pdf`** — replace the file in place; the link doesn't need
+  to change as long as the filename stays exact.
+- **Work / Projects / Achievements** — each is a plain repeated block in
+  `index.html`; copy an existing `<article class="entry">` (Work, Projects) or
+  `<div class="win">` (Achievements) to add another one.
+
+## Domain setup, if you ever need to redo it
+
+Registering or editing `harshul.is-a.dev` means editing files in a **separate**
+GitHub repo you forked: `github.com/<your-username>/register`. The two
+records that make the domain work:
+
+- `domains/harshul.json` — an `A` record pointing at Vercel's IP
+- `domains/_vercel.harshul.json` — a `TXT` record proving you own the domain
+  in Vercel (the exact value is shown in Vercel → Settings → Domains when you
+  add a new domain there)
+
+Any change to either file needs a fresh pull request to
+`is-a-dev/register`, filling out their PR template completely — an
+incomplete template fails their automated check before a human ever reviews
+it.
