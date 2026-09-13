@@ -92,7 +92,7 @@ live source responds — not a replacement for the real fetch.
 ## Domain setup, if you ever need to redo it
 
 Registering or editing `harshul.is-a.dev` means editing files in a **separate**
-GitHub repo you forked: `github.com/<your-username>/register`. The two
+GitHub repo you forked: `github.com/Harshul017/register`. The two
 records that make the domain work:
 
 - `domains/harshul.json` — an `A` record pointing at Vercel's IP
